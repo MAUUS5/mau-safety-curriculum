@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAU Safety Curriculum</title>
+<style>
+  :root {
+    --bg: #f6f7f5;
+    --surface: #ffffff;
+    --surface-2: #f0f2ef;
+    --border: #dde1db;
+    --text: #1f2620;
+    --text-muted: #5b6459;
+    --accent: #2f6b4f;
+    --accent-soft: #e4efe8;
+    --accent-strong: #1f4d38;
+    --warn: #a15c1f;
+    --warn-soft: #fbeee0;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(20,30,20,0.04), 0 4px 14px rgba(20,30,20,0.05);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  header.top {
+    margin-bottom: 28px;
+  }
+  header.top h1 {
+    font-size: 26px;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  header.top p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 14.5px;
+    line-height: 1.5;
+    max-width: 640px;
+  }
+  .meta-line {
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+
+  nav.tabs {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  nav.tabs button {
+    appearance: none;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 10px 4px;
+    margin-right: 22px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transform: translateY(1px);
+  }
+  nav.tabs button:hover { color: var(--text); }
+  nav.tabs button.active {
+    color: var(--accent-strong);
+    border-bottom-color: var(--accent);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .summary-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow);
+  }
+  .summary-row .stat {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent-strong);
+    min-width: 64px;
+  }
+  .summary-row .bar-wrap { flex: 1; }
+  .summary-row .bar-track {
+    background: var(--surface-2);
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .summary-row .bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .summary-row .bar-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  .search-row { margin-bottom: 18px; }
+  .search-row input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 14px;
+    color: var(--text);
+  }
+  .search-row input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-head h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 650;
+  }
+  .section-head .count {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    margin-left: 12px;
+  }
+  .section-body {
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+  .section.open .section-body { display: block; }
+  .section-head .chev {
+    transition: transform 0.15s ease;
+    color: var(--text-muted);
+    margin-left: 10px;
+    font-size: 12px;
+  }
+  .section.open .chev { transform: rotate(90deg); }
+
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 18px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .item:first-child { border-top: none; }
+  .item .mark {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    margin-top: 1px;
+  }
+  .item .mark.done { background: var(--accent-soft); color: var(--accent-strong); }
+  .item .mark.todo { background: var(--warn-soft); color: var(--warn); }
+  .item .topic { flex: 1; line-height: 1.4; }
+  .item .topic a {
+    color: var(--accent-strong);
+    text-decoration: none;
+  }
+  .item .topic a:hover { text-decoration: underline; }
+  .item .topic .no-link {
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .item .badge {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--warn);
+    background: var(--warn-soft);
+    padding: 2px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
+    margin-top: 1px;
+  }
+
+  .empty-state {
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 36px 24px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 28px; margin-bottom: 10px; }
+  .empty-state h3 {
+    color: var(--text);
+    margin: 0 0 8px;
+    font-size: 16px;
+  }
+  .empty-state p {
+    max-width: 460px;
+    margin: 0 auto;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  .site-list { margin-top: 18px; display: grid; gap: 10px; }
+  .site-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+  }
+  .site-card .name { font-weight: 600; font-size: 14px; }
+  .site-card .tag {
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+
+  .req-intro {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .req-list { display: grid; gap: 10px; margin-bottom: 28px; }
+  .req-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: var(--shadow);
+  }
+  .req-card .name { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+  .req-card .tag {
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+  .sub-heading {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+    margin: 0 0 10px;
+  }
+
+  .doc-btn {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--accent-strong);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-top: 1px;
+  }
+  .doc-btn:hover { background: var(--accent-soft); }
+
+  .doc-panel {
+    display: none;
+    padding: 16px 18px 18px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-2);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .doc-panel.open { display: block; }
+  .doc-panel h4 {
+    margin: 0 0 10px;
+    font-size: 15px;
+  }
+  .doc-panel .doc-field {
+    margin-bottom: 12px;
+    white-space: pre-line;
+  }
+  .doc-panel .doc-field b {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+    font-weight: 700;
+  }
+  .doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 14px;
+    font-size: 12.5px;
+  }
+  .doc-table th, .doc-table td {
+    text-align: left;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .doc-table th {
+    background: var(--surface);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--text-muted);
+  }
+  .doc-section-row td {
+    background: var(--accent-soft);
+    font-weight: 700;
+    color: var(--accent-strong);
+  }
+  .doc-footer {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  footer.appfoot {
+    margin-top: 36px;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  ::selection { background: var(--accent-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>MAU Safety Training Curriculum</h1>
+    <p>Central home for MAU's safety training curriculum. Core lessons apply everywhere; site-specific curriculums appear as their own tab as each location's materials come in.</p>
+    <div class="meta-line" id="metaLine"></div>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <div class="search-row">
+    <input type="text" id="searchInput" placeholder="Search lessons, topics, or documents...">
+  </div>
+
+  <div id="panels"></div>
+
+</div>
+
+<footer class="appfoot">Source: MAU Safety Curriculum WIP.xlsx &middot; Update this app by sending Claude new or revised site curriculums.</footer>
+
+<script>
+const CURRICULUM = {"Safety Team Lead": [{"title": "🦺 Incident Investigation", "items": [{"topic": "Investigation Process PPO", "linkLabel": "Investigation Process PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCB7MQIzECqS7r-JL253FvrAQ7aBhfAWwanZbK9YqsrRqc?e=HcuXfB", "complete": true}, {"topic": "Incident Response Workflow Map", "linkLabel": "Incident Response Flow Chart.docx", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCYP7LTPidTTr1gwGjGFpXkASyCz3_hoSC1SV31yXgMvpc?e=e3pHQD", "complete": true}, {"topic": "Injury Response Workflow Map", "linkLabel": "Injury Response Workflow Map", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQA_QUKh05oAQ6vUxlfK6xxGAYlF9TGuDSHOQ5EoY-42QII?e=ugrV13", "complete": true}, {"topic": "Investigation Checklist", "linkLabel": "Investigation Checklist", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDAOySrkKStS7XOSJn43NiEAbmobOUSnhfDdIgww6uidJ0?e=uPW6ma", "complete": true}, {"topic": "MAU Incident Investigation Report", "linkLabel": "MAU Incident Investigation Report", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQB5I8dm5kLFQ5uZCRNeHBz0AX6w9KOUR1SrkrxEA-tIbU8?e=FGEWjK", "complete": true}, {"topic": "ICI Report Standards", "linkLabel": "ICI Report Standards", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCwp-9YKmiORbhjknup34wgAeFCkDW-Du4pnnsfmmYN34c?e=u9QVZc", "complete": true}, {"topic": "How to Complete an ICI Report Presentation", "linkLabel": "How to Complete an ICI Report Presentation", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCINPO6dhZSQpuDaYcTv3OXAYHjmCZB0mPBJbDZsjgoTZM?e=fnRMvM", "complete": true}, {"topic": "MAU Associate/Witness Statement", "linkLabel": "MAU Associate/Witness Statement", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQB5I8dm5kLFQ5uZCRNeHBz0AX6w9KOUR1SrkrxEA-tIbU8?e=GqPAf9", "complete": true}, {"topic": "Refusal of Medical Treatment", "linkLabel": "Refusal of Medical Treatment", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCzEkCzoTFvR5svDSrFWO3BAZeLQaTffwYN9OUtQDK8cDg?e=VjW8Ef", "complete": true}, {"topic": "How to Complete a Drug Screening Work Instruction", "linkLabel": "Drug Screen Work Instructions.pub", "url": "https://cccitpeople-my.sharepoint.com/:u:/g/personal/mike_benitez_mau_com/IQDpC_FA3Lw6TpWHH87n0XxHAYbk6USMgu8qI_FphhHcX74?e=f8zcHQ", "complete": true}, {"topic": "Release Form for Substance Abuse Screen", "linkLabel": "Release Form for Substance Abuse Screen", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQAF8VUkdZVEQJig-GbN_IWGAWkqHznE8FHuBFx2SQveFx8?e=KYit9p", "complete": true}, {"topic": "MAU Employee Refusal to Submit for Drug and/or Alcohol Testing", "linkLabel": "MAU Refusal to Submit for Drug and/or Alcohol Testing", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCao0CfFodsSacacSH7AOCGAepl7W5bNr7RaVEVZQFNwYw?e=OuonZt", "complete": true}, {"topic": "Post Test Transportation Refusal", "linkLabel": "Post Test Transportation Refusal", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCKmTkCzuvISJHORCXJmvooAWNddmhrmFqwwuNF0wjuA0w?e=xu8ODe", "complete": true}, {"topic": "Site Hospital/ER Authorization (Form Containing Doctors Appointment Information)", "linkLabel": "Site Hospital/ER Authorization", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCI--2Vp4brS73X_wAm3nXMARBULgHWlR4G1-I7_P8yAZI?e=dmEN5f", "complete": true}, {"topic": "Incident and Action Item Tracker", "linkLabel": "Incident and Action Item Tracker", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQDrv_YowsJoTbDD14G_AG-GAQzpENCjzq_JgpCUXKMz-ls?e=CPT2Iv", "complete": true}, {"topic": "PAF Form", "linkLabel": "PAF Form", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQA1VBb1rwzjR6SjhvambHN-AfVkH3EsRF8Tr7CbfzUCxbI?e=1VxgXp", "complete": true}, {"topic": "Recertification Forklift Test (Refresher)", "linkLabel": "Fork Lift Test MAU at Michelin.doc", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDh29wOwOsuQ5vqI8QHpydZAV__nKLbKz_EL68R_a-mHdc?e=XpHZQf", "complete": true}]}, {"title": "🥽 How to Conduct an Observation", "items": [{"topic": "BBS Observation PPO", "linkLabel": "BBS Observation PPO.docx", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDivFoy-e1dQr19C0wId-0CAdv5_lM1IDs6JaTeZCPbI3A?e=iJcibz", "complete": true}, {"topic": "BBS Observation Presentation", "linkLabel": "BBS Observation Presentation", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCIstyOdDSoSolQoLFQi4RYAWzwpwC6cmD8270s-Znm9f8?e=yEZ4ML", "complete": true}]}, {"title": "⭐ How to Create an Alert", "items": [{"topic": "How to Create an Alert Work Instruction", "linkLabel": "Creating an Alert Work Instructions.pub", "url": "https://cccitpeople-my.sharepoint.com/:u:/g/personal/mike_benitez_mau_com/IQC83o9peKMcTaOIQjxu7VZcAf-j0afR-ZsYX_CmCh2gq5k?e=0MnWQI", "complete": true}, {"topic": "Safety Alert Template", "linkLabel": "Alert", "url": "https://cccitpeople-my.sharepoint.com/:f:/g/personal/mike_benitez_mau_com/IgA-EKX_HccWQJh4fxHo9rVwASakQLHuVaPZwxa15oEVgMQ?e=v8udgy", "complete": true}]}, {"title": "🚶 Disciplinary Action, The Proper Steps to Take", "items": [{"topic": "Progressive Discipline Process Flow", "linkLabel": "Progressive Discipline Flow Chart.xlsx", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQC3GsYEynG7Qo-ujx1VqS4yAeSG9hd5krdkmXGMGVy1f3U?e=1UidAn", "complete": true}, {"topic": "Warning Notice", "linkLabel": "Verbal-Written-Final Warning Notice.xls", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQArZJ3IMg5pSZCtnP7QMFNpARf4jxiphK2hcoFxbDS8ayI?e=uGBqFL", "complete": true}, {"topic": "Final Warning Form", "linkLabel": "Verbal-Written-Final Warning Notice.xls", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQArZJ3IMg5pSZCtnP7QMFNpARf4jxiphK2hcoFxbDS8ayI?e=uGBqFL", "complete": true}, {"topic": "Suspension Form", "linkLabel": "Verbal-Written-Final Warning Notice.xls", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQArZJ3IMg5pSZCtnP7QMFNpARf4jxiphK2hcoFxbDS8ayI?e=uGBqFL", "complete": true}, {"topic": "Termination/Security Process PPO", "linkLabel": "PPO -Termination Process.docx", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQB_8_EfJjbNSp0-Elf4vjzKAUYKqzv70XX-J4MYoATGwhk?e=FOZDbO", "complete": true}]}, {"title": "🧯How to Conduct an Evacuation", "items": [{"topic": "External Evacuation PPO", "linkLabel": "External Evacuation PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDjQvM-TRIiTp1lHFOY4VykAVjCx81usuMJwtgWK6aZh1s?e=mep2DA", "complete": true}, {"topic": "Internal Evacuation PPO", "linkLabel": "Internal Evacuation PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBSxVsijrCEQoAPbD2cpiHMAcnn9QvfvKZ5rUauwgleZXY?e=KfX739", "complete": true}, {"topic": "Active Intruder PPO", "linkLabel": "Active Intruder PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBSxVsijrCEQoAPbD2cpiHMAcnn9QvfvKZ5rUauwgleZXY?e=r9saua", "complete": true}]}, {"title": "⚠  How to Conduct a Safety 4SPS", "items": [{"topic": "Safety 4SPS PPO", "linkLabel": "Need to Create", "url": null, "complete": true, "doc": "4sps"}, {"topic": "Safety 4SPS Form", "linkLabel": "4SPS Form", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQAC6W03QyepS4Ab61LwyPkcAal80wBcTk9WeuO7VjMEtE4?e=QsK7zM", "complete": true}]}, {"title": "How to Conduct Hearing Testing", "items": [{"topic": "Conducting Hearing Tests PPO", "linkLabel": "Conducting Hearing Test PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQD4L_9kq6gpR4Tl0s3FlBKtAa9aBTI7Ng_8DY1PkQGcvPU?e=eri0b1", "complete": true}]}, {"title": "How to Create and Track Safety Committee", "items": [{"topic": "Creating and Managing Safety Committee PPO", "linkLabel": "Need to Create", "url": null, "complete": true, "doc": "safety_committee"}, {"topic": "Meeting Minutes Form", "linkLabel": "Meeting Minutes Form", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBYIYLrJVt2Rab2PpKNJaRRAf-8b6hQA7rEW5f9xgfL7HI?e=nM6mHU", "complete": true}]}, {"title": "How to Conduct a GEMBA", "items": [{"topic": "How to Conduct a GEMBA PPO", "linkLabel": "Safety GEMBA", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBmNQP8hiBkSLdGj8yeZ9CuARvJm_8y0Ly3ukpWs4HdX5Y?e=iYUODO", "complete": true}]}, {"title": "Reasonable Suspicion Protocol", "items": [{"topic": "Reasonable Suspicion PPO", "linkLabel": "Reasonable Suspicion PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQChTrcSmT9DQJw3zrLp9f_uAXTj64Lbovu7GeGa23P8nwM?e=R9SUHr", "complete": true}, {"topic": "MAU Reasonable Suspicion Protocol", "linkLabel": "Reasonable Suspicion Protocol", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDqJyRVX4jIQquQqtdrso8-AWH_ZOAaBANcKLQPPUuHskI?e=P5k7ak", "complete": true}, {"topic": "Reasonable Suspicion Observation Form", "linkLabel": "Reasonable Suspicion Observation Form", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCQHFgTeI42Sr2Y74zHArYxAdzjv0Gd9sN_AFWxoklcwvM?e=gHfOlt", "complete": true}, {"topic": "MAU Reasonable Suspicion Screening Procedure Flow Chart", "linkLabel": "Flow Chart", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCK_W751uaIRK9zVr2eYxKNAZHWLxnvtN3n15iC68-RF9U?e=fJ1DCh", "complete": true}]}, {"title": "SSE Audit", "items": [{"topic": "SSE Audit PPO", "linkLabel": "SSE Audit PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQC9aJOPf8vkQroqQ2v9UC9qAQOVjdJgsC3-AU9xb0Jk3ms?e=HLaI7t", "complete": true}, {"topic": "SSE Audit Form", "linkLabel": "SSE Audit Form", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQB44WSjKp73R7s2xnYyYbj9AfNbQ9U9vZUbw3dnnBQKM6g?e=HcxfV1", "complete": true}]}], "FTR": [{"title": "🦺 Incident Investigation", "items": [{"topic": "Investigation Process PPO", "linkLabel": "Investigation Process PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCB7MQIzECqS7r-JL253FvrAQ7aBhfAWwanZbK9YqsrRqc?e=jY6HIj", "complete": true}, {"topic": "Incident Response Workflow Map", "linkLabel": "Incident Response Workflow Map", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCYP7LTPidTTr1gwGjGFpXkASyCz3_hoSC1SV31yXgMvpc?e=zsxSh1", "complete": true}, {"topic": "Investigation Checklist", "linkLabel": "Investigation Checklist", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDAOySrkKStS7XOSJn43NiEAbmobOUSnhfDdIgww6uidJ0?e=4ksip5", "complete": true}, {"topic": "MAU Incident Investigation Report", "linkLabel": "MAU Incident Investigation Report", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQB5I8dm5kLFQ5uZCRNeHBz0AX6w9KOUR1SrkrxEA-tIbU8?e=xugcUp", "complete": true}, {"topic": "ICI Report Standards", "linkLabel": "ICI Report Standards", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCwp-9YKmiORbhjknup34wgAeFCkDW-Du4pnnsfmmYN34c?e=iQys2K", "complete": true}, {"topic": "How to Complete an ICI Report Presentation", "linkLabel": "How to Complete an ICI Report Presentation", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCINPO6dhZSQpuDaYcTv3OXAYHjmCZB0mPBJbDZsjgoTZM?e=8ihLcJ", "complete": true}, {"topic": "MAU Associate/Witness Statement", "linkLabel": "MAU Associate/Witness Statement", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQB5I8dm5kLFQ5uZCRNeHBz0AX6w9KOUR1SrkrxEA-tIbU8?e=3hup5o", "complete": true}, {"topic": "Refusal of Medical Treatment", "linkLabel": "Refusal of Medical Treatment", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCzEkCzoTFvR5svDSrFWO3BAZeLQaTffwYN9OUtQDK8cDg?e=ncrj51", "complete": true}, {"topic": "How to Complete a Drug Screening Work Instruction", "linkLabel": "How to Complete a Drug Screening Work Instruction", "url": "https://cccitpeople-my.sharepoint.com/:u:/g/personal/mike_benitez_mau_com/IQDpC_FA3Lw6TpWHH87n0XxHAYbk6USMgu8qI_FphhHcX74?e=eIYRG8", "complete": true}, {"topic": "Release Form for Substance Abuse Screen", "linkLabel": "Release Form for Substance Abuse Screen", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQAF8VUkdZVEQJig-GbN_IWGAWkqHznE8FHuBFx2SQveFx8?e=ToOKQI", "complete": true}, {"topic": "MAU Employee Refusal to Submit for Drug and/or Alcohol Testing", "linkLabel": "Refusal to Submit for a Drug Screening", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCao0CfFodsSacacSH7AOCGAepl7W5bNr7RaVEVZQFNwYw?e=VafvDA", "complete": true}, {"topic": "Post Test Transportation Refusal", "linkLabel": "Post Test Transportation Refusal", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCKmTkCzuvISJHORCXJmvooAWNddmhrmFqwwuNF0wjuA0w?e=cLozMb", "complete": true}, {"topic": "Site Hospital/ER Authorization (Form Containing Doctors Appointment Information)", "linkLabel": "Appointment Form", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCI--2Vp4brS73X_wAm3nXMARBULgHWlR4G1-I7_P8yAZI?e=uDz1Wd", "complete": true}, {"topic": "Incident and Action Item Tracker", "linkLabel": "Incident and Action Item Tracker", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQDrv_YowsJoTbDD14G_AG-GAQzpENCjzq_JgpCUXKMz-ls?e=PWBeYn", "complete": true}, {"topic": "PAF Form", "linkLabel": "PAF Form", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQA1VBb1rwzjR6SjhvambHN-AfVkH3EsRF8Tr7CbfzUCxbI?e=qgAXwy", "complete": true}, {"topic": "Recertification Forklift Test (Refresher)", "linkLabel": "Forklift Test", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDh29wOwOsuQ5vqI8QHpydZAV__nKLbKz_EL68R_a-mHdc?e=FA2fkj", "complete": true}]}, {"title": "🥽 How to Conduct an Observation", "items": [{"topic": "BBS Observation PPO", "linkLabel": "BBS Observation PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDivFoy-e1dQr19C0wId-0CAdv5_lM1IDs6JaTeZCPbI3A?e=DPj0BT", "complete": true}, {"topic": "BBS Observation Presentation", "linkLabel": "BBS Observation Presentation", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCIstyOdDSoSolQoLFQi4RYAWzwpwC6cmD8270s-Znm9f8?e=QQDBWE", "complete": true}]}, {"title": "⭐ How to Create an Alert", "items": [{"topic": "How to Create an Alert Work Instruction", "linkLabel": "How to Create an Alert Work Instruction", "url": "https://cccitpeople-my.sharepoint.com/:u:/g/personal/mike_benitez_mau_com/IQC83o9peKMcTaOIQjxu7VZcAf-j0afR-ZsYX_CmCh2gq5k?e=J8jhqv", "complete": true}, {"topic": "Safety Alert Template", "linkLabel": "Safety Alert Template", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQBnXWHuCFvEQY6-47M1HoPZAV-TtRlg1CzojyFIBkiuNdw?e=tcOdDQ", "complete": true}]}, {"title": "🚶 Disciplinary Action, The Proper Steps to Take", "items": [{"topic": "Progressive Discipline Process Flow", "linkLabel": "Progressive Discipline Flow Chart.xlsx", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQC3GsYEynG7Qo-ujx1VqS4yAeSG9hd5krdkmXGMGVy1f3U?e=1UidAn", "complete": true}, {"topic": "Warning Notice", "linkLabel": "Verbal-Written-Final Warning Notice.xls", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQArZJ3IMg5pSZCtnP7QMFNpARf4jxiphK2hcoFxbDS8ayI?e=oL1MEW", "complete": true}, {"topic": "Final Warning Form", "linkLabel": "Verbal-Written-Final Warning Notice.xls", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQArZJ3IMg5pSZCtnP7QMFNpARf4jxiphK2hcoFxbDS8ayI?e=oL1MEW", "complete": true}, {"topic": "Suspension Form", "linkLabel": "Verbal-Written-Final Warning Notice.xls", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQArZJ3IMg5pSZCtnP7QMFNpARf4jxiphK2hcoFxbDS8ayI?e=oL1MEW", "complete": true}, {"topic": "Termination/Security Process PPO", "linkLabel": null, "url": null, "complete": true, "doc": "termination_ftr"}]}, {"title": "🧯How to Conduct an Evacuation", "items": [{"topic": "External Evacuation PPO", "linkLabel": "External Evacuation PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDjQvM-TRIiTp1lHFOY4VykAVjCx81usuMJwtgWK6aZh1s?e=hw615A", "complete": true}, {"topic": "Internal Evacuation PPO", "linkLabel": "Internal Evacuation PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBSxVsijrCEQoAPbD2cpiHMAcnn9QvfvKZ5rUauwgleZXY?e=E1l1I0", "complete": true}, {"topic": "Active Intruder PPO", "linkLabel": "Active Intruder PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBSxVsijrCEQoAPbD2cpiHMAcnn9QvfvKZ5rUauwgleZXY?e=r9saua", "complete": true}]}, {"title": "How to Conduct a GEMBA", "items": [{"topic": "How to Conduct a GEMBA PPO", "linkLabel": "Safety GEMBA", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBmNQP8hiBkSLdGj8yeZ9CuARvJm_8y0Ly3ukpWs4HdX5Y?e=QI0pQN", "complete": true}]}, {"title": "Reasonable Suspicion Protocol", "items": [{"topic": "Reasonable Suspicion PPO", "linkLabel": "Reasonable Suspicion PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQChTrcSmT9DQJw3zrLp9f_uAXTj64Lbovu7GeGa23P8nwM?e=hzh3JX", "complete": true}, {"topic": "MAU Reasonable Suspicion Protocol", "linkLabel": "Reasonable Suspicion Protocol", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDqJyRVX4jIQquQqtdrso8-AWH_ZOAaBANcKLQPPUuHskI?e=lAVnV6", "complete": true}, {"topic": "Reasonable Suspicion Observation Form", "linkLabel": "Reasonable Suspicion Observation Form", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCQHFgTeI42Sr2Y74zHArYxAdzjv0Gd9sN_AFWxoklcwvM?e=WBDiFV", "complete": true}, {"topic": "MAU Reasonable Suspicion Screening Procedure Flow Chart", "linkLabel": "Reasonable Suspicion Screening Procedure", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCK_W751uaIRK9zVr2eYxKNAZHWLxnvtN3n15iC68-RF9U?e=g5h455", "complete": true}]}]};
+const PPO_CONTENT = {"4sps": {"title": "Conducting a 4 Step Problem Solving (4SPS) Event Following a Safety Incident that Requires a Process Improvement", "purpose": "Purpose: To standardize how a 4 Step Problem Solving event is conducted after a safety incident, so that the true root cause is identified, a process improvement is implemented and standardized, and the incident does not reoccur.", "inputs": "Inputs: Completed MAU Incident Investigation Checklist, ICI report in Process Map, incident photos and witness statements, Safety Alert, 4 Step Problem Solving template (Quick & Easy), 5 Why Analysis worksheet, 30 / 60 / 90 follow-up form, existing standard work / JSA / PPO / PM records for the task involved, prior incident history for the area.", "steps": [{"type": "step", "text": "1.  Confirm the incident investigation is complete: the ICI report is entered in Process Map, photos and statements are attached, and the MAU Incident Investigation Checklist is finished.", "who": "MAU Ops Supervisor or Leadership", "timing": "Within 24 hours of the incident", "why": "4SPS is built on facts gathered at the point of cause, not on recollection."}, {"type": "step", "text": "2.  Confirm 4SPS is the right tool. Use 4SPS when the problem is contained to one area or process, the root cause is findable with 5 Whys, and countermeasures can be tested within days. If it crosses departments or requires layout or capital change, schedule a Kaizen Event instead. If leadership alignment is required, document it on an A3.", "who": "MAU Site Leadership", "timing": "Upon receipt of the initial investigation report", "why": "Using the wrong tool wastes the team’s time and leaves the problem unsolved."}, {"type": "step", "text": "3.  Assign the roles: Facilitator (guides the team through the four steps), Co-Facilitator (schedule, resources, presentation), and Problem Owner (the leader accountable for sustaining the result).", "who": "MAU Site Leadership", "timing": "Upon receipt of the initial investigation report", "why": "Clear ownership is what keeps countermeasures alive after the session ends."}, {"type": "step", "text": "4.  Select 2 to 4 team members closest to the process, including at least one associate who performs the task. Limit outside subject matter experts to 1 or 2.", "who": "4SPS Facilitator", "timing": "Before scheduling", "why": "The people who do the work see the abnormality first. Small teams stay focused."}, {"type": "step", "text": "5.  Schedule the session (1 to 2 hours) within 5 business days of the incident. Print the 4 Step Problem Solving template and the 5 Why Analysis worksheet, and pull supporting data: incident report, prior incidents in the area, standard work / JSA / PM records for the task.", "who": "4SPS Facilitator", "timing": "Within 5 business days of the incident", "why": "Momentum and memory both fade. Waiting weeks makes the point of cause harder to see."}, {"type": "step", "text": "6.  Open the session. Review the incident and set the ground rules: one problem at a time, no solutions discussed until Step 2 is complete, and no blaming individuals.", "who": "4SPS Facilitator", "timing": "First 10 minutes of the session", "why": "Jumping to solutions is the most common way a 4SPS fails."}, {"type": "section", "text": "STEP 1 – DO WE HAVE A PROBLEM?"}, {"type": "step", "text": "7.  Go and See. Take the team to the location of the incident and observe the task being performed the way it is normally performed.", "who": "4SPS Team", "timing": "First 15 minutes of the session", "why": "Data collected at a desk is not the same as data collected at the Gemba."}, {"type": "step", "text": "8.  Define the gap. State what should be happening (the target or standard) and what is actually happening (the actual condition), then state the impact in terms of Safety, Quality, Service or Cost.", "who": "4SPS Team", "timing": "Step 1", "why": "The gap between target and actual is the problem. Without it there is nothing to measure."}, {"type": "step", "text": "9.  Identify the Point of Cause – the physical location and the time the abnormality was first observed. Record the what, when, where and how.", "who": "4SPS Team", "timing": "Step 1", "why": "Narrows a broad safety concern down to a specific breakdown that can be investigated."}, {"type": "step", "text": "10.  Write the problem statement using the template: During (period of time) the (measure) for (process) was (actual) vs. (target), resulting in (impact). Do not include a cause, a solution, or a person’s name.", "who": "4SPS Team", "timing": "Step 1", "why": "A specific, measurable statement is the only way to prove later that the problem was solved."}, {"type": "section", "text": "STEP 2 – DO WE KNOW THE CAUSE?"}, {"type": "step", "text": "11.  Identify the direct cause – the answer to the first \"Why?\" Where more than one direct cause exists, run a separate 5 Why chain for each.", "who": "4SPS Team", "timing": "Step 2", "why": "Separating direct cause from root cause prevents the team from stopping at the symptom."}, {"type": "step", "text": "12.  Complete the 5 Why analysis on the worksheet. Ask the full question each time, not just \"why?\", and make every \"because\" something the team can verify by observation, record, or measurement.", "who": "4SPS Team", "timing": "Step 2", "why": "An unverified \"because\" is a guess, and guesses produce the wrong countermeasure."}, {"type": "step", "text": "13.  Validate the root cause. It must land on one of three things: no standard or an inadequate standard, a standard that is not being followed, or no system / an inadequate system. If the answer is \"the associate made a mistake,\" keep asking why the system allowed or failed to detect that mistake.", "who": "4SPS Facilitator", "timing": "Step 2", "why": "Only these three categories describe something the organization can permanently change."}, {"type": "step", "text": "14.  Test the chain in reverse using \"therefore.\" Read the analysis from the root cause back up to the incident. If the logic breaks, rework that link before moving on.", "who": "4SPS Facilitator", "timing": "Step 2", "why": "A broken link means the countermeasure will be aimed at the wrong place."}, {"type": "section", "text": "STEP 3 – HAVE WE CONFIRMED CAUSE AND EFFECT?"}, {"type": "step", "text": "15.  Correct or contain the direct cause immediately so no associate is exposed to the hazard while permanent countermeasures are being developed and tested.", "who": "MAU Ops Supervisor or Leadership", "timing": "Same day as the session", "why": "People come first. Containment protects associates while the permanent fix is proven."}, {"type": "step", "text": "16.  Write the hypothesis in \"If we… then we expect…\" form. State the exact change, the exact measure, and the timeframe, so the result is a clear yes or no.", "who": "4SPS Team", "timing": "Step 3", "why": "A vague hypothesis cannot be tested, so the team never learns whether it was right."}, {"type": "step", "text": "17.  Run the experiment. Block or remove the cause, one experiment at a time, and record what actually happened to the problem.", "who": "4SPS Team", "timing": "Within days of the session", "why": "Confirms the chain of causality before time and money are spent on a permanent change."}, {"type": "step", "text": "18.  Identify the countermeasures aimed at the root cause and mark each one temporary or permanent. Anything that cannot be completed during the session goes on the Implementation Plan with an owner and a due date.", "who": "4SPS Team", "timing": "Step 3", "why": "Countermeasures aimed at the direct cause only are band-aids; the incident will return."}, {"type": "section", "text": "STEP 4 – HAVE WE CONFIRMED COUNTERMEASURES?"}, {"type": "step", "text": "19.  Implement the process improvement. Create or revise the affected standard – standard work, JSA, PPO, PM checklist, or training material – so the corrected method is now the way the job is done.", "who": "Problem Owner", "timing": "Within 30 days of the session", "why": "A countermeasure that is never written into a standard disappears with the next shift change."}, {"type": "step", "text": "20.  Train every affected associate and shift on the revised standard and document the training.", "who": "Problem Owner", "timing": "Within 30 days of the session", "why": "An untrained standard is the same as no standard."}, {"type": "step", "text": "21.  Define the Check: who will verify the new standard is being followed, how they will verify it, and how often.", "who": "4SPS Team", "timing": "Step 4", "why": "Confirms the change is actually being done, not just written down."}, {"type": "step", "text": "22.  Define the Check-the-Checker: who (normally one level above) will verify that the checks are being performed, how, and how often.", "who": "4SPS Team", "timing": "Step 4", "why": "Without a second layer the checks quietly stop and the problem comes back."}, {"type": "step", "text": "23.  Load the remaining actions onto the 30 / 60 / 90 Kaizen Newspaper with problem description, action required, responsible person and due date. Post it where the team can see it.", "who": "4SPS Facilitator", "timing": "End of the session", "why": "Makes open actions visible so they are completed rather than forgotten."}, {"type": "step", "text": "24.  Report out to the Problem Owner and site leadership. Update the Safety Alert with the confirmed root cause and countermeasures, and post the event on the Simple Problem Solving tracking board.", "who": "4SPS Facilitator", "timing": "Within 2 business days of the session", "why": "Closes the loop on the alert issued during the investigation and shows the team the result."}, {"type": "step", "text": "25.  Upload the completed 4SPS document, 5 Why worksheet and Implementation Plan into the ICI report in Process Map, and communicate the outcome to the Michelin US-1 Safety Team.", "who": "MAU Ops Supervisor or Leadership", "timing": "After the report out", "why": "Keeps MAU Corporate Safety and the host site aware that the root cause was addressed."}, {"type": "step", "text": "26.  30-Day Check: confirm the countermeasures are in place, the new standard is being followed, and results are trending correctly. Update the Kaizen Newspaper.", "who": "Problem Owner", "timing": "30 days after the session", "why": "This is where most events fail – nobody follows up."}, {"type": "step", "text": "27.  60-Day Check: confirm results have stabilized and that the Check and Check-the-Checker are happening on schedule. Adjust if needed.", "who": "Problem Owner", "timing": "60 days after the session", "why": "Verifies the improvement is holding without constant attention."}, {"type": "step", "text": "28.  90-Day Check: confirm the incident has not reoccurred and close the 4SPS. If it has reoccurred, restart the process – the root cause analysis was incomplete.", "who": "Problem Owner", "timing": "90 days after the session", "why": "Closure is based on evidence, not on the calendar."}, {"type": "step", "text": "29.  Share the learning with other shifts, departments and MAU sites where the same hazard or process exists.", "who": "MAU Site Leadership", "timing": "After the 90-day check", "why": "One team’s root cause is often another team’s next incident."}], "outputs": "Outputs: A completed 4SPS document containing a measurable problem statement, a verified root cause, a tested hypothesis and countermeasures aimed at that root cause; a created or revised standard with associates trained and training documented; a Check and Check-the-Checker plan in place with named owners and frequencies; assigned 30 / 60 / 90 Kaizen Newspaper actions; documentation uploaded to the ICI report in Process Map and communicated to the Michelin US-1 Safety Team; and the learning shared across shifts and sites.", "footer": {"owner": "MAU Site Leadership", "date": "8/7/2026", "revision": "New"}}, "safety_committee": {"title": "Establishing and Operating the MAU Employee Safety Committee at Michelin", "purpose": "Purpose: To standardize how the MAU Employee Safety Committee is formed and operated, so that associate safety concerns are brought forward, acted on, and followed through to closure.\n\nMission: The MAU Safety Committee exists to eliminate the causes of injury at MAU @ Michelin US-1. We bring associate concerns forward, go and see the work, and fix what we find using 4 Step Problem Solving — then we follow it through until it stays fixed.", "inputs": "Inputs: Safety Committee charter and mission statement, associate nomination submissions, MAU eligibility criteria, site incident and near miss history, open Safety Alerts, associate safety suggestions, open 4SPS events and 30 / 60 / 90 follow-up status, Monday through Friday support staff project list, meeting schedule and minutes template.", "steps": [{"type": "step", "text": "1.  Confirm MAU Site Leadership support for the committee, including paid meeting time, lunch, and the authority to act on committee recommendations.", "who": "MAU Site Leadership", "timing": "Before the committee is formed", "why": "A committee without leadership backing becomes a complaint box."}, {"type": "step", "text": "2.  Confirm any committee requirements with MAU Risk Management and the Michelin US-1 Safety Team before the charter is finalized.", "who": "MAU Site Leadership", "timing": "Before the committee is formed", "why": "Host site and corporate requirements may set minimums that the charter must meet."}, {"type": "step", "text": "3.  Document the charter: mission statement, number of seats, area representation, term length, meeting cadence, and standing agenda.", "who": "MAU Site Safety Manager", "timing": "Before the committee is formed", "why": "Written structure is what keeps the committee running when membership turns over."}, {"type": "step", "text": "4.  Announce the committee to all MAU associates. Post the mission statement, the available seats, and how to be considered.", "who": "MAU Ops Supervisor or Leadership", "timing": "Two weeks before selection", "why": "Associates cannot volunteer for something they have not heard of."}, {"type": "step", "text": "5.  Collect nominations. Associates may self-nominate or be recommended by their supervisor.", "who": "MAU Ops Supervisor or Leadership", "timing": "Two week window", "why": "Self-nomination surfaces the associates who already care about safety."}, {"type": "step", "text": "6.  Confirm eligibility: 90 days or more with MAU at US-1, no active disciplinary action for a safety violation in the past 6 months, site safety orientation complete, and able to attend meetings and carry assignments between them.", "who": "MAU Ops Supervisor or Leadership", "timing": "During selection", "why": "Consistent criteria keep selection fair and defensible."}, {"type": "step", "text": "7.  Ensure your committee consists of 10 - 200 associates include a minimum of 10% of associates (OR) 200+ associates include a representative from each department.", "who": "MAU Site Leadership", "timing": "At formation", "why": "Area representation makes sure hazards are seen from every part of the operation."}, {"type": "step", "text": "8.  Assign staggered terms to the founding group so all six seats do not expire at the same time. Terms are 6 months thereafter.", "who": "MAU Site Leadership", "timing": "At formation", "why": "Staggering keeps experienced members on the committee through every turnover."}, {"type": "step", "text": "9.  Elect the Chair from the hourly membership. The MAU Ops Supervisor or Site Safety Manager serves as Co-Chair in a supporting role.", "who": "Safety Committee", "timing": "At the first meeting", "why": "An associate-led committee produces findings; a supervisor-led one produces a report."}, {"type": "step", "text": "10.  Publish the meeting schedule: twice per month, 60 minutes, on the clock, lunch provided. Both meetings are open to all committee members so associates can attend whichever fits their schedule.", "who": "Co-Chair", "timing": "At formation", "why": "Two open meetings a month give associates flexibility around shift work and overtime."}, {"type": "step", "text": "11.  Orient the committee: review the mission, what is in scope and what is not, and how an item becomes a project.", "who": "MAU Site Safety Manager", "timing": "At the first meeting", "why": "A shared understanding of scope prevents the committee from drifting into HR matters."}, {"type": "section", "text": "STANDING AGENDA – EVERY MEETING"}, {"type": "step", "text": "12.  Hold the meeting. Review incidents, near misses, and safety alerts since the last meeting.", "who": "Committee Chair", "timing": "Opening of each meeting", "why": "Keeps the committee current on what is actually happening on the floor."}, {"type": "step", "text": "13.  Item 1 – Status update on the associate project carried over from the last meeting.", "who": "Safety Committee", "timing": "Each meeting", "why": "A standing status slot is what keeps projects moving instead of stalling."}, {"type": "step", "text": "14.  Item 2 – Associate ideas. Members bring their items, the committee discusses them, and votes the next project forward. Items not selected go on a running list so associates can see their input was not lost.", "who": "Safety Committee", "timing": "Each meeting", "why": "The committee sets its own priorities, which is what makes it the associates’ committee."}, {"type": "step", "text": "15.  Item 3 – Monday through Friday support staff bring a project in progress to the committee for input and a decision.", "who": "Safety Committee", "timing": "Each meeting", "why": "Gives associates a real say in work already underway, not just a chance to react to it."}, {"type": "step", "text": "16.  Record every action item with a named owner and a due date before the meeting closes.", "who": "Committee Chair", "timing": "Close of each meeting", "why": "An item without an owner and a date does not get done."}, {"type": "step", "text": "17.  Post the minutes where all associates can see them.", "who": "Co-Chair", "timing": "Within 3 business days", "why": "Visible follow-through is what earns associate participation."}, {"type": "step", "text": "18.  Escalate any item that requires root cause analysis to a 4 Step Problem Solving event, following the 4SPS PPO.", "who": "Committee Chair", "timing": "As identified", "why": "The committee identifies problems; 4SPS is how the causes get eliminated."}, {"type": "step", "text": "19.  Report committee activity and open items to MAU Site Leadership and the Michelin US-1 Safety Team.", "who": "Co-Chair", "timing": "Monthly", "why": "Keeps leadership positioned to remove roadblocks and approve resources."}, {"type": "step", "text": "20.  Rotate seats as terms expire, refilling through the same nomination and eligibility process.", "who": "MAU Ops Supervisor or Leadership", "timing": "As terms expire", "why": "Fresh members bring fresh eyes to hazards the group has stopped noticing."}, {"type": "step", "text": "21.  Review committee effectiveness: items closed, incident and near miss trends, and associate participation. Adjust the charter as needed.", "who": "MAU Site Leadership", "timing": "Annually", "why": "Confirms the committee is producing results rather than just meeting."}], "outputs": "Outputs: A seated MAU Employee Safety Committee with documented charter, mission statement, area representation and staggered terms; a published twice-monthly meeting schedule; posted minutes with named owners and due dates for every action item; a running list of associate safety items; items requiring root cause analysis handed off to 4SPS; and a monthly report to MAU Site Leadership and the Michelin US-1 Safety Team.", "footer": {"owner": "MAU Site Leadership", "date": "8/7/2026", "revision": "New"}}, "termination_ftr": {"title": "Creating and Uploading Personal Action Form for Termination", "purpose": "Purpose: To maintain plant safety at Michelin and provide MAU with documentation to support the termination decision against UI Claims and whether to rehire.", "inputs": null, "processSummary": "Process: To safely remove an associate off the premises prior to termination, retrieve all support documents from employee Bullhorn file, upload termination PAF into associate Bullhorn file, and email PAF to MAU leadership team to end assignment.", "steps": [{"type": "step", "text": "If associate is being terminated for incident: collect badge and walk associate out of security gate.", "who": "Site Manager/Leadership Team", "timing": "Immediately after incident/post-incident investigation completed", "why": "To ensure safety of all Michelin personnel and the safety of associate."}, {"type": "step", "text": "Notify associate that they are being \n“Suspended until further investigation,” and are not to return to work until notified.", "who": "Site Manager/Leadership Team", "timing": "After associate is off property", "why": "To ensure safety of all plant personnel and to negate further incident"}, {"type": "step", "text": "Pending Investigation: Request that Security suspend the associate’s badge pending completion of the investigation.\nTermination Decision: If termination is approved, notify Security to fully deactivate the associate’s badge.", "who": "Site Manager/Leadership Team", "timing": "After associate is off property", "why": "To prevent associates returning to the site"}, {"type": "step", "text": "Complete Badge Term Notice Form and send email to Security with form attached to deactivate badge immediately.", "who": "Site Manager/Leadership Team", "timing": "After associate is off property", "why": "To prevent associates returning to the site"}, {"type": "step", "text": "Pending Investigation, reviewing written statements and any documentation for associate regarding similar behavioral incidents.", "who": "Site Manager/Leadership Team", "timing": "Prior to end of shift", "why": "To determine whether to end the associate’s contract"}, {"type": "step", "text": "If the determination from the investigation is to terminate, create Personal Action Form (PAF) for termination.", "who": "Site Manager/Leadership Team", "timing": "Prior to end of shift", "why": "To document termination"}, {"type": "step", "text": "If associate is being terminated for attendance: allow the associate to complete last shift.", "who": "Site Manager/Leadership Team", "timing": "After completion of associate’s last shift", "why": "To ensure site operations are not negatively affected"}, {"type": "step", "text": "Complete Badge Term Notice process and send email to Security with form attached to deactivate badge.", "who": "Site Manager/Leadership Team", "timing": "After completion of associate’s last shift", "why": "To prevent associates from reentering the site"}, {"type": "step", "text": "Fill out PAF for termination, print and sign.", "who": "Site Manager/Leadership Team", "timing": "After associate is off property", "why": "To document termination"}, {"type": "step", "text": "After badge has been deactivated and PAF has been completed, contact associate to give notification that “your assignment at has ended.”", "who": "Site Manager/Leadership Team", "timing": "Prior to associate’s next scheduled shift", "why": "To prevent associates from returning to the site"}, {"type": "step", "text": "Upload PAF for Termination and any related documentation into associate’s Bullhorn documents folder.", "who": "Site Manager/Leadership Team", "timing": "After PAF has been completed", "why": "To document termination"}, {"type": "step", "text": "End associate’s assignment in Bullhorn", "who": "Site Manager/Leadership Team", "timing": "After PAF has been uploaded to Bullhorn", "why": "To end assignment"}, {"type": "step", "text": "Move associates name to the terminated tab on your digital roaster on the app", "who": "Site Manager/Leadership Team", "timing": "After associates assignment has ended in Bullhorn", "why": "To endure the team, know the associate has been terminated"}], "outputs": "Outcome: The associate’s termination PAF is created, uploaded into the employees Bullhorn file, assignment has been ended in Bullhorn and name has been moved to the terminated tab on the digital roster", "outputsLabel": "Outcome", "footer": {"owner": "", "date": "", "revision": ""}, "columns": ["Content / Sequence", "Who", "When", "Why"]}};
+const SITE_REQUIREMENTS = [{"topic": "Document Control Tracker", "fromSection": "⭐ How to Create an Alert", "roles": ["Safety Team Lead", "FTR"]}, {"topic": "Site Map with External and Internal Points", "fromSection": "🧯How to Conduct an Evacuation", "roles": ["Safety Team Lead", "FTR"]}];
+
+const ROLE_META = {
+  "Safety Team Lead": { icon: "🦺", desc: "Full curriculum for Safety Team Lead onboarding and ongoing reference." },
+  "FTR": { icon: "🧭", desc: "Curriculum track for FTR." }
+};
+
+// Sites collected so far — empty until site-specific curriculums are added.
+const SITES = [];
+
+function countStats(sections) {
+  let total = 0, done = 0;
+  sections.forEach(s => s.items.forEach(i => { total++; if (i.complete) done++; }));
+  return { total, done };
+}
+
+function renderDocPanel(doc, panelId) {
+  const stepsHtml = doc.steps.map(s => {
+    if (s.type === 'section') {
+      return `<tr class="doc-section-row"><td colspan="4">${escapeHtml(s.text)}</td></tr>`;
+    }
+    return `<tr><td>${escapeHtml(s.text)}</td><td>${escapeHtml(s.who)}</td><td>${escapeHtml(s.timing)}</td><td>${escapeHtml(s.why)}</td></tr>`;
+  }).join('');
+  const footer = doc.footer || {};
+  const cols = doc.columns && doc.columns.length === 4 ? doc.columns : ["Content / Sequence", "Who", "Timing", "Why"];
+  const outputsLabel = doc.outputsLabel || "Outputs";
+  const footerBits = [];
+  if (footer.owner) footerBits.push(`Process Owner: ${escapeHtml(footer.owner)}`);
+  if (footer.date) footerBits.push(`Date: ${escapeHtml(footer.date)}`);
+  if (footer.revision) footerBits.push(`Revision: ${escapeHtml(footer.revision)}`);
+  return `<div class="doc-panel" id="${panelId}">
+      <h4>${escapeHtml(doc.title || '')}</h4>
+      ${doc.purpose ? `<div class="doc-field"><b>Purpose</b>${escapeHtml(doc.purpose.replace(/^Purpose:\s*/, ''))}</div>` : ''}
+      ${doc.inputs ? `<div class="doc-field"><b>Inputs</b>${escapeHtml(doc.inputs.replace(/^Inputs:\s*/, ''))}</div>` : ''}
+      ${doc.processSummary ? `<div class="doc-field"><b>Process</b>${escapeHtml(doc.processSummary.replace(/^Process:\s*/, ''))}</div>` : ''}
+      <table class="doc-table">
+        <thead><tr><th>${escapeHtml(cols[0])}</th><th>${escapeHtml(cols[1])}</th><th>${escapeHtml(cols[2])}</th><th>${escapeHtml(cols[3])}</th></tr></thead>
+        <tbody>${stepsHtml}</tbody>
+      </table>
+      ${doc.outputs ? `<div class="doc-field"><b>${escapeHtml(outputsLabel)}</b>${escapeHtml(doc.outputs.replace(/^(Outputs|Outcome):\s*/, ''))}</div>` : ''}
+      ${footerBits.length ? `<div class="doc-footer">${footerBits.join(' &middot; ')}</div>` : ''}
+    </div>`;
+}
+
+function renderItem(item, panelId) {
+  const mark = item.complete
+    ? '<span class="mark done" title="Complete">✓</span>'
+    : '<span class="mark todo" title="Needs work">!</span>';
+  let topicHtml;
+  if (item.url) {
+    topicHtml = `<a href="${item.url}" target="_blank" rel="noopener">${escapeHtml(item.topic || item.linkLabel || 'Untitled')}</a>`;
+  } else {
+    topicHtml = `<span>${escapeHtml(item.topic || item.linkLabel || 'Untitled')}</span>`;
+  }
+  const needsCreate = item.linkLabel && /need to create/i.test(item.linkLabel);
+  const siteSpecific = item.linkLabel && /site specific/i.test(item.linkLabel);
+  const doc = item.doc ? PPO_CONTENT[item.doc] : null;
+  let badge = '';
+  if (doc) badge = `<button class="doc-btn" onclick="toggleDoc('${panelId}')">View PPO</button>`;
+  else if (needsCreate) badge = '<span class="badge">Needs to be created</span>';
+  else if (siteSpecific) badge = '<span class="badge">Site-specific</span>';
+  else if (!item.url) badge = '<span class="badge">No link yet</span>';
+  const rowHtml = `<div class="item" data-search="${escapeHtml((item.topic||'') + ' ' + (item.linkLabel||'')).toLowerCase()}">
+      ${mark}
+      <div class="topic">${topicHtml}</div>
+      ${badge}
+    </div>`;
+  return doc ? rowHtml + renderDocPanel(doc, panelId) : rowHtml;
+}
+
+function toggleDoc(panelId) {
+  document.getElementById(panelId).classList.toggle('open');
+}
+
+function renderSection(section, idx, roleSlug) {
+  const { total, done } = countStats([section]);
+  const itemsHtml = section.items.map((item, i) => renderItem(item, `doc-${roleSlug}-${idx}-${i}`)).join('');
+  return `<div class="section open" data-idx="${idx}">
+      <div class="section-head" onclick="toggleSection(this.parentElement)">
+        <h3>${escapeHtml(section.title)}</h3>
+        <div style="display:flex;align-items:center;">
+          <span class="count">${done}/${total}</span>
+          <span class="chev">&#9656;</span>
+        </div>
+      </div>
+      <div class="section-body">${itemsHtml}</div>
+    </div>`;
+}
+
+function toggleSection(el) {
+  el.classList.toggle('open');
+}
+
+function renderRolePanel(roleName) {
+  const sections = CURRICULUM[roleName] || [];
+  const { total, done } = countStats(sections);
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const meta = ROLE_META[roleName] || { icon: "📋", desc: "" };
+  const roleSlug = slug(roleName);
+  const sectionsHtml = sections.map((s, i) => renderSection(s, i, roleSlug)).join('');
+  return `<div class="panel" id="panel-${slug(roleName)}">
+      <div class="summary-row">
+        <div class="stat">${pct}%</div>
+        <div class="bar-wrap">
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+          <div class="bar-label">${done} of ${total} lessons complete &middot; ${meta.desc}</div>
+        </div>
+      </div>
+      ${sectionsHtml}
+    </div>`;
+}
+
+function renderRequirements() {
+  if (!SITE_REQUIREMENTS.length) return '';
+  const cards = SITE_REQUIREMENTS.map(r => `<div class="req-card">
+      <div class="name">${escapeHtml(r.topic)}</div>
+      <div class="tag">From "${escapeHtml(r.fromSection)}" &middot; needed for ${escapeHtml(r.roles.join(' & '))}</div>
+    </div>`).join('');
+  return `<p class="req-intro">These items are called out in the core curriculum as needing a site-specific version. Each site should provide its own version of these before its subsection is considered complete:</p>
+    <div class="req-list">${cards}</div>`;
+}
+
+function renderSitesPanel() {
+  const reqHtml = renderRequirements();
+  let bodyHtml;
+  if (SITES.length === 0) {
+    bodyHtml = `<div class="empty-state">
+          <div class="icon">📍</div>
+          <h3>No site-specific curriculums yet</h3>
+          <p>As individual sites finish tailoring the core curriculum — swapping in their site map, document control tracker, or local procedures — send those files over and a subsection will be added here for that location.</p>
+        </div>`;
+  } else {
+    const cards = SITES.map(s => `<div class="site-card"><span class="name">${escapeHtml(s.name)}</span><span class="tag">${s.count} lessons</span></div>`).join('');
+    bodyHtml = `<p class="sub-heading">Sites submitted</p><div class="site-list">${cards}</div>`;
+  }
+  return `<div class="panel" id="panel-sites">${reqHtml}${bodyHtml}</div>`;
+}
+
+function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-'); }
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function buildTabs() {
+  const roleNames = Object.keys(CURRICULUM);
+  const allTabs = [...roleNames, "Site-Specific"];
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = allTabs.map((name, i) => {
+    const id = name === "Site-Specific" ? "sites" : slug(name);
+    return `<button data-target="${id}" class="${i===0 ? 'active' : ''}">${escapeHtml(name)}</button>`;
+  }).join('');
+  tabsEl.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => activateTab(btn.dataset.target));
+  });
+}
+
+function activateTab(target) {
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.target === target));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === `panel-${target}`));
+}
+
+function buildPanels() {
+  const roleNames = Object.keys(CURRICULUM);
+  const panelsEl = document.getElementById('panels');
+  let html = roleNames.map(renderRolePanel).join('');
+  html += renderSitesPanel();
+  panelsEl.innerHTML = html;
+  document.querySelector('.panel').classList.add('active');
+}
+
+function setupSearch() {
+  const input = document.getElementById('searchInput');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    document.querySelectorAll('.item').forEach(item => {
+      const match = !q || (item.dataset.search || '').includes(q);
+      item.style.display = match ? '' : 'none';
+    });
+    document.querySelectorAll('.section').forEach(section => {
+      const anyVisible = Array.from(section.querySelectorAll('.item')).some(i => i.style.display !== 'none');
+      section.style.display = anyVisible ? '' : 'none';
+      if (q && anyVisible) section.classList.add('open');
+    });
+  });
+}
+
+function setMeta() {
+  const el = document.getElementById('metaLine');
+  el.textContent = "Built from MAU Safety Curriculum WIP.xlsx";
+}
+
+buildTabs();
+buildPanels();
+setupSearch();
+setMeta();
+</script>
+</body>
+</html>
