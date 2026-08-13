@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAU Safety Curriculum</title>
+<style>
+  :root {
+    --bg: #f6f7f5;
+    --surface: #ffffff;
+    --surface-2: #f0f2ef;
+    --border: #dde1db;
+    --text: #1f2620;
+    --text-muted: #5b6459;
+    --accent: #2f6b4f;
+    --accent-soft: #e4efe8;
+    --accent-strong: #1f4d38;
+    --warn: #a15c1f;
+    --warn-soft: #fbeee0;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(20,30,20,0.04), 0 4px 14px rgba(20,30,20,0.05);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  header.top {
+    margin-bottom: 28px;
+  }
+  header.top h1 {
+    font-size: 26px;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  header.top p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 14.5px;
+    line-height: 1.5;
+    max-width: 640px;
+  }
+  .meta-line {
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+
+  nav.tabs {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  nav.tabs button {
+    appearance: none;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 10px 4px;
+    margin-right: 22px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transform: translateY(1px);
+  }
+  nav.tabs button:hover { color: var(--text); }
+  nav.tabs button.active {
+    color: var(--accent-strong);
+    border-bottom-color: var(--accent);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .summary-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow);
+  }
+  .summary-row .stat {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent-strong);
+    min-width: 64px;
+  }
+  .summary-row .bar-wrap { flex: 1; }
+  .summary-row .bar-track {
+    background: var(--surface-2);
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .summary-row .bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+  }
+  .summary-row .bar-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  .search-row { margin-bottom: 18px; }
+  .search-row input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 14px;
+    color: var(--text);
+  }
+  .search-row input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-head h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 650;
+  }
+  .section-head .count {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    margin-left: 12px;
+  }
+  .section-body {
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+  .section.open .section-body { display: block; }
+  .section-head .chev {
+    transition: transform 0.15s ease;
+    color: var(--text-muted);
+    margin-left: 10px;
+    font-size: 12px;
+  }
+  .section.open .chev { transform: rotate(90deg); }
+
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 18px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .item:first-child { border-top: none; }
+  .item .mark {
+    flex-shrink: 0;
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    margin-top: 1px;
+  }
+  .item .mark.done { background: var(--accent-soft); color: var(--accent-strong); }
+  .item .mark.todo { background: var(--warn-soft); color: var(--warn); }
+  .item .topic { flex: 1; line-height: 1.4; }
+  .item .topic a {
+    color: var(--accent-strong);
+    text-decoration: none;
+  }
+  .item .topic a:hover { text-decoration: underline; }
+  .item .topic .no-link {
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .item .badge {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--warn);
+    background: var(--warn-soft);
+    padding: 2px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
+    margin-top: 1px;
+  }
+
+  .empty-state {
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 36px 24px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 28px; margin-bottom: 10px; }
+  .empty-state h3 {
+    color: var(--text);
+    margin: 0 0 8px;
+    font-size: 16px;
+  }
+  .empty-state p {
+    max-width: 460px;
+    margin: 0 auto;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  .site-list { margin-top: 18px; display: grid; gap: 10px; }
+  .site-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+  }
+  .site-card .name { font-weight: 600; font-size: 14px; }
+  .site-card .tag {
+    font-size: 11.5px;
+    color: var(--text-muted);
+  }
+
+  footer.appfoot {
+    margin-top: 36px;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  ::selection { background: var(--accent-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>MAU Safety Training Curriculum</h1>
+    <p>Central home for MAU's safety training curriculum. Core lessons apply everywhere; site-specific curriculums appear as their own tab as each location's materials come in.</p>
+    <div class="meta-line" id="metaLine"></div>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <div class="search-row">
+    <input type="text" id="searchInput" placeholder="Search lessons, topics, or documents...">
+  </div>
+
+  <div id="panels"></div>
+
+</div>
+
+<footer class="appfoot">Source: MAU Safety Curriculum WIP.xlsx &middot; Update this app by sending Claude new or revised site curriculums.</footer>
+
+<script>
+const CURRICULUM = {"Safety Team Lead": [{"title": "🦺 Incident Investigation", "items": [{"topic": "Investigation Process PPO", "linkLabel": "Investigation Process PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCB7MQIzECqS7r-JL253FvrAQ7aBhfAWwanZbK9YqsrRqc?e=HcuXfB", "complete": true}, {"topic": "Incident Response Workflow Map", "linkLabel": "Incident Response Flow Chart.docx", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCYP7LTPidTTr1gwGjGFpXkASyCz3_hoSC1SV31yXgMvpc?e=e3pHQD", "complete": true}, {"topic": "Injury Response Workflow Map", "linkLabel": "Injury Response Workflow Map", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQA_QUKh05oAQ6vUxlfK6xxGAYlF9TGuDSHOQ5EoY-42QII?e=ugrV13", "complete": true}, {"topic": "Investigation Checklist", "linkLabel": "Investigation Checklist", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDAOySrkKStS7XOSJn43NiEAbmobOUSnhfDdIgww6uidJ0?e=uPW6ma", "complete": true}, {"topic": "MAU Incident Investigation Report", "linkLabel": "MAU Incident Investigation Report", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQB5I8dm5kLFQ5uZCRNeHBz0AX6w9KOUR1SrkrxEA-tIbU8?e=FGEWjK", "complete": true}, {"topic": "ICI Report Standards", "linkLabel": "ICI Report Standards", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCwp-9YKmiORbhjknup34wgAeFCkDW-Du4pnnsfmmYN34c?e=u9QVZc", "complete": true}, {"topic": "How to Complete an ICI Report Presentation", "linkLabel": "How to Complete an ICI Report Presentation", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCINPO6dhZSQpuDaYcTv3OXAYHjmCZB0mPBJbDZsjgoTZM?e=fnRMvM", "complete": true}, {"topic": "MAU Associate/Witness Statement", "linkLabel": "MAU Associate/Witness Statement", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQB5I8dm5kLFQ5uZCRNeHBz0AX6w9KOUR1SrkrxEA-tIbU8?e=GqPAf9", "complete": true}, {"topic": "Refusal of Medical Treatment", "linkLabel": "Refusal of Medical Treatment", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCzEkCzoTFvR5svDSrFWO3BAZeLQaTffwYN9OUtQDK8cDg?e=VjW8Ef", "complete": true}, {"topic": "How to Complete a Drug Screening Work Instruction", "linkLabel": "Drug Screen Work Instructions.pub", "url": "https://cccitpeople-my.sharepoint.com/:u:/g/personal/mike_benitez_mau_com/IQDpC_FA3Lw6TpWHH87n0XxHAYbk6USMgu8qI_FphhHcX74?e=f8zcHQ", "complete": true}, {"topic": "Release Form for Substance Abuse Screen", "linkLabel": "Release Form for Substance Abuse Screen", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQAF8VUkdZVEQJig-GbN_IWGAWkqHznE8FHuBFx2SQveFx8?e=KYit9p", "complete": true}, {"topic": "MAU Employee Refusal to Submit for Drug and/or Alcohol Testing", "linkLabel": "MAU Refusal to Submit for Drug and/or Alcohol Testing", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCao0CfFodsSacacSH7AOCGAepl7W5bNr7RaVEVZQFNwYw?e=OuonZt", "complete": true}, {"topic": "Post Test Transportation Refusal", "linkLabel": "Post Test Transportation Refusal", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCKmTkCzuvISJHORCXJmvooAWNddmhrmFqwwuNF0wjuA0w?e=xu8ODe", "complete": true}, {"topic": "Site Hospital/ER Authorization (Form Containing Doctors Appointment Information)", "linkLabel": "Site Hospital/ER Authorization", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCI--2Vp4brS73X_wAm3nXMARBULgHWlR4G1-I7_P8yAZI?e=dmEN5f", "complete": true}, {"topic": "Incident and Action Item Tracker", "linkLabel": "Incident and Action Item Tracker", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQDrv_YowsJoTbDD14G_AG-GAQzpENCjzq_JgpCUXKMz-ls?e=CPT2Iv", "complete": true}, {"topic": "PAF Form", "linkLabel": "PAF Form", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQA1VBb1rwzjR6SjhvambHN-AfVkH3EsRF8Tr7CbfzUCxbI?e=1VxgXp", "complete": true}, {"topic": "Recertification Forklift Test (Refresher)", "linkLabel": "Fork Lift Test MAU at Michelin.doc", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDh29wOwOsuQ5vqI8QHpydZAV__nKLbKz_EL68R_a-mHdc?e=XpHZQf", "complete": true}]}, {"title": "🥽 How to Conduct an Observation", "items": [{"topic": "BBS Observation PPO", "linkLabel": "BBS Observation PPO.docx", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDivFoy-e1dQr19C0wId-0CAdv5_lM1IDs6JaTeZCPbI3A?e=iJcibz", "complete": true}, {"topic": "BBS Observation Presentation", "linkLabel": "BBS Observation Presentation", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCIstyOdDSoSolQoLFQi4RYAWzwpwC6cmD8270s-Znm9f8?e=yEZ4ML", "complete": true}]}, {"title": "⭐ How to Create an Alert", "items": [{"topic": "How to Create an Alert Work Instruction", "linkLabel": "Creating an Alert Work Instructions.pub", "url": "https://cccitpeople-my.sharepoint.com/:u:/g/personal/mike_benitez_mau_com/IQC83o9peKMcTaOIQjxu7VZcAf-j0afR-ZsYX_CmCh2gq5k?e=0MnWQI", "complete": true}, {"topic": "Document Control Tracker", "linkLabel": "Will make site specific.", "url": null, "complete": true}, {"topic": "Safety Alert Template", "linkLabel": "Alert", "url": "https://cccitpeople-my.sharepoint.com/:f:/g/personal/mike_benitez_mau_com/IgA-EKX_HccWQJh4fxHo9rVwASakQLHuVaPZwxa15oEVgMQ?e=v8udgy", "complete": true}]}, {"title": "🚶 Disciplinary Action, The Proper Steps to Take", "items": [{"topic": "Progressive Discipline Process Flow", "linkLabel": "Progressive Discipline Flow Chart.xlsx", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQC3GsYEynG7Qo-ujx1VqS4yAeSG9hd5krdkmXGMGVy1f3U?e=1UidAn", "complete": true}, {"topic": "Warning Notice", "linkLabel": "Verbal-Written-Final Warning Notice.xls", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQArZJ3IMg5pSZCtnP7QMFNpARf4jxiphK2hcoFxbDS8ayI?e=uGBqFL", "complete": true}, {"topic": "Final Warning Form", "linkLabel": "Verbal-Written-Final Warning Notice.xls", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQArZJ3IMg5pSZCtnP7QMFNpARf4jxiphK2hcoFxbDS8ayI?e=uGBqFL", "complete": true}, {"topic": "Suspension Form", "linkLabel": "Verbal-Written-Final Warning Notice.xls", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQArZJ3IMg5pSZCtnP7QMFNpARf4jxiphK2hcoFxbDS8ayI?e=uGBqFL", "complete": true}, {"topic": "Termination/Security Process PPO", "linkLabel": "PPO -Termination Process.docx", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQB_8_EfJjbNSp0-Elf4vjzKAUYKqzv70XX-J4MYoATGwhk?e=FOZDbO", "complete": true}]}, {"title": "🧯How to Conduct an Evacuation", "items": [{"topic": "External Evacuation PPO", "linkLabel": "External Evacuation PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDjQvM-TRIiTp1lHFOY4VykAVjCx81usuMJwtgWK6aZh1s?e=mep2DA", "complete": true}, {"topic": "Internal Evacuation PPO", "linkLabel": "Internal Evacuation PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBSxVsijrCEQoAPbD2cpiHMAcnn9QvfvKZ5rUauwgleZXY?e=KfX739", "complete": true}, {"topic": "Active Intruder PPO", "linkLabel": "Active Intruder PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBSxVsijrCEQoAPbD2cpiHMAcnn9QvfvKZ5rUauwgleZXY?e=r9saua", "complete": true}, {"topic": "Site Map with External and Internal Points", "linkLabel": "Will make site specific.", "url": null, "complete": true}]}, {"title": "⚠  How to Conduct a Safety 4SPS", "items": [{"topic": "Safety 4SPS PPO", "linkLabel": "Need to Create", "url": null, "complete": false}, {"topic": "Safety 4SPS Form", "linkLabel": "4SPS Form", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQAC6W03QyepS4Ab61LwyPkcAal80wBcTk9WeuO7VjMEtE4?e=QsK7zM", "complete": true}]}, {"title": "How to Conduct Hearing Testing", "items": [{"topic": "Conducting Hearing Tests PPO", "linkLabel": "Conducting Hearing Test PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQD4L_9kq6gpR4Tl0s3FlBKtAa9aBTI7Ng_8DY1PkQGcvPU?e=eri0b1", "complete": true}]}, {"title": "How to Create and Track Safety Committee", "items": [{"topic": "Creating and Managing Safety Committee PPO", "linkLabel": "Need to Create", "url": null, "complete": false}, {"topic": "Meeting Minutes Form", "linkLabel": "Meeting Minutes Form", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBYIYLrJVt2Rab2PpKNJaRRAf-8b6hQA7rEW5f9xgfL7HI?e=nM6mHU", "complete": true}]}, {"title": "How to Conduct a GEMBA", "items": [{"topic": "How to Conduct a GEMBA PPO", "linkLabel": "Safety GEMBA", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBmNQP8hiBkSLdGj8yeZ9CuARvJm_8y0Ly3ukpWs4HdX5Y?e=iYUODO", "complete": true}]}, {"title": "Reasonable Suspicion Protocol", "items": [{"topic": "Reasonable Suspicion PPO", "linkLabel": "Reasonable Suspicion PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQChTrcSmT9DQJw3zrLp9f_uAXTj64Lbovu7GeGa23P8nwM?e=R9SUHr", "complete": true}, {"topic": "MAU Reasonable Suspicion Protocol", "linkLabel": "Reasonable Suspicion Protocol", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDqJyRVX4jIQquQqtdrso8-AWH_ZOAaBANcKLQPPUuHskI?e=P5k7ak", "complete": true}, {"topic": "Reasonable Suspicion Observation Form", "linkLabel": "Reasonable Suspicion Observation Form", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCQHFgTeI42Sr2Y74zHArYxAdzjv0Gd9sN_AFWxoklcwvM?e=gHfOlt", "complete": true}, {"topic": "MAU Reasonable Suspicion Screening Procedure Flow Chart", "linkLabel": "Flow Chart", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCK_W751uaIRK9zVr2eYxKNAZHWLxnvtN3n15iC68-RF9U?e=fJ1DCh", "complete": true}]}, {"title": "SSE Audit", "items": [{"topic": "SSE Audit PPO", "linkLabel": "SSE Audit PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQC9aJOPf8vkQroqQ2v9UC9qAQOVjdJgsC3-AU9xb0Jk3ms?e=HLaI7t", "complete": true}, {"topic": "SSE Audit Form", "linkLabel": "SSE Audit Form", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQB44WSjKp73R7s2xnYyYbj9AfNbQ9U9vZUbw3dnnBQKM6g?e=HcxfV1", "complete": true}]}], "FTR": [{"title": "🦺 Incident Investigation", "items": [{"topic": "Investigation Process PPO", "linkLabel": "Investigation Process PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCB7MQIzECqS7r-JL253FvrAQ7aBhfAWwanZbK9YqsrRqc?e=jY6HIj", "complete": true}, {"topic": "Incident Response Workflow Map", "linkLabel": "Incident Response Workflow Map", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCYP7LTPidTTr1gwGjGFpXkASyCz3_hoSC1SV31yXgMvpc?e=zsxSh1", "complete": true}, {"topic": "Investigation Checklist", "linkLabel": "Investigation Checklist", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDAOySrkKStS7XOSJn43NiEAbmobOUSnhfDdIgww6uidJ0?e=4ksip5", "complete": true}, {"topic": "MAU Incident Investigation Report", "linkLabel": "MAU Incident Investigation Report", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQB5I8dm5kLFQ5uZCRNeHBz0AX6w9KOUR1SrkrxEA-tIbU8?e=xugcUp", "complete": true}, {"topic": "ICI Report Standards", "linkLabel": "ICI Report Standards", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCwp-9YKmiORbhjknup34wgAeFCkDW-Du4pnnsfmmYN34c?e=iQys2K", "complete": true}, {"topic": "How to Complete an ICI Report Presentation", "linkLabel": "How to Complete an ICI Report Presentation", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCINPO6dhZSQpuDaYcTv3OXAYHjmCZB0mPBJbDZsjgoTZM?e=8ihLcJ", "complete": true}, {"topic": "MAU Associate/Witness Statement", "linkLabel": "MAU Associate/Witness Statement", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQB5I8dm5kLFQ5uZCRNeHBz0AX6w9KOUR1SrkrxEA-tIbU8?e=3hup5o", "complete": true}, {"topic": "Refusal of Medical Treatment", "linkLabel": "Refusal of Medical Treatment", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCzEkCzoTFvR5svDSrFWO3BAZeLQaTffwYN9OUtQDK8cDg?e=ncrj51", "complete": true}, {"topic": "How to Complete a Drug Screening Work Instruction", "linkLabel": "How to Complete a Drug Screening Work Instruction", "url": "https://cccitpeople-my.sharepoint.com/:u:/g/personal/mike_benitez_mau_com/IQDpC_FA3Lw6TpWHH87n0XxHAYbk6USMgu8qI_FphhHcX74?e=eIYRG8", "complete": true}, {"topic": "Release Form for Substance Abuse Screen", "linkLabel": "Release Form for Substance Abuse Screen", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQAF8VUkdZVEQJig-GbN_IWGAWkqHznE8FHuBFx2SQveFx8?e=ToOKQI", "complete": true}, {"topic": "MAU Employee Refusal to Submit for Drug and/or Alcohol Testing", "linkLabel": "Refusal to Submit for a Drug Screening", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCao0CfFodsSacacSH7AOCGAepl7W5bNr7RaVEVZQFNwYw?e=VafvDA", "complete": true}, {"topic": "Post Test Transportation Refusal", "linkLabel": "Post Test Transportation Refusal", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCKmTkCzuvISJHORCXJmvooAWNddmhrmFqwwuNF0wjuA0w?e=cLozMb", "complete": true}, {"topic": "Site Hospital/ER Authorization (Form Containing Doctors Appointment Information)", "linkLabel": "Appointment Form", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCI--2Vp4brS73X_wAm3nXMARBULgHWlR4G1-I7_P8yAZI?e=uDz1Wd", "complete": true}, {"topic": "Incident and Action Item Tracker", "linkLabel": "Incident and Action Item Tracker", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQDrv_YowsJoTbDD14G_AG-GAQzpENCjzq_JgpCUXKMz-ls?e=PWBeYn", "complete": true}, {"topic": "PAF Form", "linkLabel": "PAF Form", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQA1VBb1rwzjR6SjhvambHN-AfVkH3EsRF8Tr7CbfzUCxbI?e=qgAXwy", "complete": true}, {"topic": "Recertification Forklift Test (Refresher)", "linkLabel": "Forklift Test", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDh29wOwOsuQ5vqI8QHpydZAV__nKLbKz_EL68R_a-mHdc?e=FA2fkj", "complete": true}]}, {"title": "🥽 How to Conduct an Observation", "items": [{"topic": "BBS Observation PPO", "linkLabel": "BBS Observation PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDivFoy-e1dQr19C0wId-0CAdv5_lM1IDs6JaTeZCPbI3A?e=DPj0BT", "complete": true}, {"topic": "BBS Observation Presentation", "linkLabel": "BBS Observation Presentation", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCIstyOdDSoSolQoLFQi4RYAWzwpwC6cmD8270s-Znm9f8?e=QQDBWE", "complete": true}]}, {"title": "⭐ How to Create an Alert", "items": [{"topic": "How to Create an Alert Work Instruction", "linkLabel": "How to Create an Alert Work Instruction", "url": "https://cccitpeople-my.sharepoint.com/:u:/g/personal/mike_benitez_mau_com/IQC83o9peKMcTaOIQjxu7VZcAf-j0afR-ZsYX_CmCh2gq5k?e=J8jhqv", "complete": true}, {"topic": "Document Control Tracker", "linkLabel": "Will make site specific.", "url": null, "complete": true}, {"topic": "Safety Alert Template", "linkLabel": "Safety Alert Template", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQBnXWHuCFvEQY6-47M1HoPZAV-TtRlg1CzojyFIBkiuNdw?e=tcOdDQ", "complete": true}]}, {"title": "🚶 Disciplinary Action, The Proper Steps to Take", "items": [{"topic": "Progressive Discipline Process Flow", "linkLabel": "Progressive Discipline Flow Chart.xlsx", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQC3GsYEynG7Qo-ujx1VqS4yAeSG9hd5krdkmXGMGVy1f3U?e=1UidAn", "complete": true}, {"topic": "Warning Notice", "linkLabel": "Verbal-Written-Final Warning Notice.xls", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQArZJ3IMg5pSZCtnP7QMFNpARf4jxiphK2hcoFxbDS8ayI?e=oL1MEW", "complete": true}, {"topic": "Final Warning Form", "linkLabel": "Verbal-Written-Final Warning Notice.xls", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQArZJ3IMg5pSZCtnP7QMFNpARf4jxiphK2hcoFxbDS8ayI?e=oL1MEW", "complete": true}, {"topic": "Suspension Form", "linkLabel": "Verbal-Written-Final Warning Notice.xls", "url": "https://cccitpeople-my.sharepoint.com/:x:/g/personal/mike_benitez_mau_com/IQArZJ3IMg5pSZCtnP7QMFNpARf4jxiphK2hcoFxbDS8ayI?e=oL1MEW", "complete": true}, {"topic": "Termination/Security Process PPO", "linkLabel": null, "url": null, "complete": false}]}, {"title": "🧯How to Conduct an Evacuation", "items": [{"topic": "External Evacuation PPO", "linkLabel": "External Evacuation PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDjQvM-TRIiTp1lHFOY4VykAVjCx81usuMJwtgWK6aZh1s?e=hw615A", "complete": true}, {"topic": "Internal Evacuation PPO", "linkLabel": "Internal Evacuation PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBSxVsijrCEQoAPbD2cpiHMAcnn9QvfvKZ5rUauwgleZXY?e=E1l1I0", "complete": true}, {"topic": "Active Intruder PPO", "linkLabel": "Active Intruder PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBSxVsijrCEQoAPbD2cpiHMAcnn9QvfvKZ5rUauwgleZXY?e=r9saua", "complete": true}, {"topic": "Site Map with External and Internal Points", "linkLabel": "Will make site specific.", "url": null, "complete": true}]}, {"title": "How to Conduct a GEMBA", "items": [{"topic": "How to Conduct a GEMBA PPO", "linkLabel": "Safety GEMBA", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQBmNQP8hiBkSLdGj8yeZ9CuARvJm_8y0Ly3ukpWs4HdX5Y?e=QI0pQN", "complete": true}]}, {"title": "Reasonable Suspicion Protocol", "items": [{"topic": "Reasonable Suspicion PPO", "linkLabel": "Reasonable Suspicion PPO", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQChTrcSmT9DQJw3zrLp9f_uAXTj64Lbovu7GeGa23P8nwM?e=hzh3JX", "complete": true}, {"topic": "MAU Reasonable Suspicion Protocol", "linkLabel": "Reasonable Suspicion Protocol", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQDqJyRVX4jIQquQqtdrso8-AWH_ZOAaBANcKLQPPUuHskI?e=lAVnV6", "complete": true}, {"topic": "Reasonable Suspicion Observation Form", "linkLabel": "Reasonable Suspicion Observation Form", "url": "https://cccitpeople-my.sharepoint.com/:b:/g/personal/mike_benitez_mau_com/IQCQHFgTeI42Sr2Y74zHArYxAdzjv0Gd9sN_AFWxoklcwvM?e=WBDiFV", "complete": true}, {"topic": "MAU Reasonable Suspicion Screening Procedure Flow Chart", "linkLabel": "Reasonable Suspicion Screening Procedure", "url": "https://cccitpeople-my.sharepoint.com/:w:/g/personal/mike_benitez_mau_com/IQCK_W751uaIRK9zVr2eYxKNAZHWLxnvtN3n15iC68-RF9U?e=g5h455", "complete": true}]}]};
+
+const ROLE_META = {
+  "Safety Team Lead": { icon: "🦺", desc: "Full curriculum for Safety Team Lead onboarding and ongoing reference." },
+  "FTR": { icon: "🧭", desc: "Curriculum track for FTR." }
+};
+
+// Sites collected so far — empty until site-specific curriculums are added.
+const SITES = [];
+
+function countStats(sections) {
+  let total = 0, done = 0;
+  sections.forEach(s => s.items.forEach(i => { total++; if (i.complete) done++; }));
+  return { total, done };
+}
+
+function renderItem(item) {
+  const mark = item.complete
+    ? '<span class="mark done" title="Complete">✓</span>'
+    : '<span class="mark todo" title="Needs work">!</span>';
+  let topicHtml;
+  if (item.url) {
+    topicHtml = `<a href="${item.url}" target="_blank" rel="noopener">${escapeHtml(item.topic || item.linkLabel || 'Untitled')}</a>`;
+  } else {
+    topicHtml = `<span>${escapeHtml(item.topic || item.linkLabel || 'Untitled')}</span>`;
+  }
+  const needsCreate = item.linkLabel && /need to create/i.test(item.linkLabel);
+  const siteSpecific = item.linkLabel && /site specific/i.test(item.linkLabel);
+  let badge = '';
+  if (needsCreate) badge = '<span class="badge">Needs to be created</span>';
+  else if (siteSpecific) badge = '<span class="badge">Site-specific</span>';
+  else if (!item.url) badge = '<span class="badge">No link yet</span>';
+  return `<div class="item" data-search="${escapeHtml((item.topic||'') + ' ' + (item.linkLabel||'')).toLowerCase()}">
+      ${mark}
+      <div class="topic">${topicHtml}</div>
+      ${badge}
+    </div>`;
+}
+
+function renderSection(section, idx) {
+  const { total, done } = countStats([section]);
+  const itemsHtml = section.items.map(renderItem).join('');
+  return `<div class="section open" data-idx="${idx}">
+      <div class="section-head" onclick="toggleSection(this.parentElement)">
+        <h3>${escapeHtml(section.title)}</h3>
+        <div style="display:flex;align-items:center;">
+          <span class="count">${done}/${total}</span>
+          <span class="chev">&#9656;</span>
+        </div>
+      </div>
+      <div class="section-body">${itemsHtml}</div>
+    </div>`;
+}
+
+function toggleSection(el) {
+  el.classList.toggle('open');
+}
+
+function renderRolePanel(roleName) {
+  const sections = CURRICULUM[roleName] || [];
+  const { total, done } = countStats(sections);
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const meta = ROLE_META[roleName] || { icon: "📋", desc: "" };
+  const sectionsHtml = sections.map((s, i) => renderSection(s, i)).join('');
+  return `<div class="panel" id="panel-${slug(roleName)}">
+      <div class="summary-row">
+        <div class="stat">${pct}%</div>
+        <div class="bar-wrap">
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+          <div class="bar-label">${done} of ${total} lessons complete &middot; ${meta.desc}</div>
+        </div>
+      </div>
+      ${sectionsHtml}
+    </div>`;
+}
+
+function renderSitesPanel() {
+  if (SITES.length === 0) {
+    return `<div class="panel" id="panel-sites">
+        <div class="empty-state">
+          <div class="icon">📍</div>
+          <h3>No site-specific curriculums yet</h3>
+          <p>As individual sites finish tailoring the core curriculum — swapping in their site map, document control tracker, or local procedures — send those files over and a subsection will be added here for that location.</p>
+        </div>
+      </div>`;
+  }
+  const cards = SITES.map(s => `<div class="site-card"><span class="name">${escapeHtml(s.name)}</span><span class="tag">${s.count} lessons</span></div>`).join('');
+  return `<div class="panel" id="panel-sites"><div class="site-list">${cards}</div></div>`;
+}
+
+function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-'); }
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function buildTabs() {
+  const roleNames = Object.keys(CURRICULUM);
+  const allTabs = [...roleNames, "Site-Specific"];
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = allTabs.map((name, i) => {
+    const id = name === "Site-Specific" ? "sites" : slug(name);
+    return `<button data-target="${id}" class="${i===0 ? 'active' : ''}">${escapeHtml(name)}</button>`;
+  }).join('');
+  tabsEl.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => activateTab(btn.dataset.target));
+  });
+}
+
+function activateTab(target) {
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.target === target));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === `panel-${target}`));
+}
+
+function buildPanels() {
+  const roleNames = Object.keys(CURRICULUM);
+  const panelsEl = document.getElementById('panels');
+  let html = roleNames.map(renderRolePanel).join('');
+  html += renderSitesPanel();
+  panelsEl.innerHTML = html;
+  document.querySelector('.panel').classList.add('active');
+}
+
+function setupSearch() {
+  const input = document.getElementById('searchInput');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    document.querySelectorAll('.item').forEach(item => {
+      const match = !q || (item.dataset.search || '').includes(q);
+      item.style.display = match ? '' : 'none';
+    });
+    document.querySelectorAll('.section').forEach(section => {
+      const anyVisible = Array.from(section.querySelectorAll('.item')).some(i => i.style.display !== 'none');
+      section.style.display = anyVisible ? '' : 'none';
+      if (q && anyVisible) section.classList.add('open');
+    });
+  });
+}
+
+function setMeta() {
+  const el = document.getElementById('metaLine');
+  el.textContent = "Built from MAU Safety Curriculum WIP.xlsx";
+}
+
+buildTabs();
+buildPanels();
+setupSearch();
+setMeta();
+</script>
+</body>
+</html>
